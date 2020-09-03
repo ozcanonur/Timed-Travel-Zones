@@ -26,3 +26,4 @@ yarn-error.log*
 
 .eslintignore
 .eslintrc.js
+config.js
