@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* global google */
 import React, { useEffect } from 'react';
+import { useLocalStorage } from './customHooks';
 // import GoogleMapReact from 'google-map-react';
 
 const getDirections = (originId, destinationId, travelMode, departureTime, modes) => {
@@ -15,6 +16,7 @@ const getDirections = (originId, destinationId, travelMode, departureTime, modes
         modes,
       },
       unitSystem: google.maps.UnitSystem.IMPERIAL,
+      region: 'uk',
     };
 
     DirectionsService.route(options, (result, status) => {
@@ -31,35 +33,58 @@ const getRouteDetails = (route) => {
   const startAddress = route.start_address;
   const endAddress = route.end_address;
   const distance = route.distance.text;
+  const travelSteps = route.steps.map((step) => {
+    if (step.travel_mode === 'TRANSIT') return { type: step.transit.line.name, duration: step.duration.text };
+    return { type: 'Walking', duration: step.duration.text };
+  });
 
-  return { startAddress, endAddress, departureTime, arrivalTime, travelDuration, distance };
+  return { startAddress, endAddress, departureTime, arrivalTime, travelDuration, distance, travelSteps };
+};
+
+const printRouteDetails = (route) => {
+  const {
+    startAddress,
+    endAddress,
+    departureTime,
+    arrivalTime,
+    travelDuration,
+    distance,
+    travelSteps,
+  } = getRouteDetails(route);
+
+  console.log(`Start address: ${startAddress}`);
+  console.log(`End Address: ${endAddress}`);
+  console.log(`Departure time: ${departureTime}`);
+  console.log(`Arrival time: ${arrivalTime}`);
+  console.log(`Duration: ${travelDuration}`);
+  console.log(`Distance: ${distance}`);
+  travelSteps.forEach((step, index) => {
+    console.log(`${index + 1}: ${step.type}, ${step.duration}`);
+  });
 };
 
 const Map = () => {
+  const [routes, setRoutes] = useLocalStorage('routes', []);
+
   useEffect(() => {
-    const originId = 'ChIJI9JoOqIEdkgRm1W33pepbrs';
+    // Home
+    const originId = 'ChIJK_5hqZ8EdkgRx1LypC0twDQ';
+    // Rachel's job
     const destinationId = 'ChIJuy2PxKMIdkgR4Z37JsEU16Q';
 
-    getDirections(originId, destinationId, google.maps.TravelMode.TRANSIT, new Date(2020, 9, 1, 10, 30), [
-      'SUBWAY',
-    ]).then((directions) => {
-      console.log(directions);
+    if (routes.length === 0) {
+      getDirections(originId, destinationId, google.maps.TravelMode.TRANSIT, new Date(2020, 8, 1, 10, 30), [
+        'SUBWAY',
+      ]).then((directions) => {
+        console.log('Got routes again');
 
-      const { routes } = directions;
-      const firstRoute = routes[0].legs[0];
+        const firstRoute = directions.routes[0].legs[0];
+        setRoutes([firstRoute]);
+      });
+    }
+  }, [routes.length, setRoutes]);
 
-      const { startAddress, endAddress, departureTime, arrivalTime, travelDuration, distance } = getRouteDetails(
-        firstRoute
-      );
-
-      console.log(`Start address: ${startAddress}`);
-      console.log(`End Address: ${endAddress}`);
-      console.log(`Departure time: ${departureTime}`);
-      console.log(`Arrival time: ${arrivalTime}`);
-      console.log(`Duration: ${travelDuration}`);
-      console.log(`Distance: ${distance}`);
-    });
-  }, []);
+  printRouteDetails(routes[0]);
 
   return (
     <div style={{ height: '1000', width: '100%' }}>
