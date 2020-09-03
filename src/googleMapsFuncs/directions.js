@@ -22,7 +22,9 @@ export const getDirections = (originId, destinationId, travelMode, departureTime
   });
 };
 
-const getRouteDetails = (route) => {
+export const getRouteDetails = (direction) => {
+  const originId = direction.geocoded_waypoints[0].place_id;
+  const route = direction.routes[0].legs[0];
   const departureTime = route.departure_time.value;
   const arrivalTime = route.arrival_time.value;
   const travelDuration = route.duration.text;
@@ -34,7 +36,7 @@ const getRouteDetails = (route) => {
     return { type: 'Walking', duration: step.duration.text };
   });
 
-  return { startAddress, endAddress, departureTime, arrivalTime, travelDuration, distance, travelSteps };
+  return { originId, startAddress, endAddress, departureTime, arrivalTime, travelDuration, distance, travelSteps };
 };
 
 export const printRouteDetails = (route) => {
