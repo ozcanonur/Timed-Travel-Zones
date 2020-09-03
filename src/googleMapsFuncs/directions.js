@@ -1,10 +1,6 @@
 /* eslint-disable no-console */
 /* global google */
-import React, { useEffect } from 'react';
-import { useLocalStorage } from './customHooks';
-// import GoogleMapReact from 'google-map-react';
-
-const getDirections = (originId, destinationId, travelMode, departureTime, modes) => {
+export const getDirections = (originId, destinationId, travelMode, departureTime, modes) => {
   return new Promise((resolve, reject) => {
     const DirectionsService = new google.maps.DirectionsService();
     const options = {
@@ -41,7 +37,7 @@ const getRouteDetails = (route) => {
   return { startAddress, endAddress, departureTime, arrivalTime, travelDuration, distance, travelSteps };
 };
 
-const printRouteDetails = (route) => {
+export const printRouteDetails = (route) => {
   const {
     startAddress,
     endAddress,
@@ -62,42 +58,3 @@ const printRouteDetails = (route) => {
     console.log(`${index + 1}: ${step.type}, ${step.duration}`);
   });
 };
-
-const Map = () => {
-  const [routes, setRoutes] = useLocalStorage('routes', []);
-
-  useEffect(() => {
-    // Home
-    const originId = 'ChIJK_5hqZ8EdkgRx1LypC0twDQ';
-    // Rachel's job
-    const destinationId = 'ChIJuy2PxKMIdkgR4Z37JsEU16Q';
-
-    if (routes.length === 0) {
-      getDirections(originId, destinationId, google.maps.TravelMode.TRANSIT, new Date(2020, 8, 1, 10, 30), [
-        'SUBWAY',
-      ]).then((directions) => {
-        console.log('Got routes again');
-
-        const firstRoute = directions.routes[0].legs[0];
-        setRoutes([firstRoute]);
-      });
-    }
-  }, [routes.length, setRoutes]);
-
-  printRouteDetails(routes[0]);
-
-  return (
-    <div style={{ height: '1000', width: '100%' }}>
-      {/* <GoogleMapReact
-        bootstrapURLKeys={{ key: 'AIzaSyCf2cM3g7U_wxxuzcWRrsm3F-Gw1nY2yZU' }}
-        defaultCenter={{
-          lat: 51.496,
-          lng: -0.1,
-        }}
-        defaultZoom={15}
-      /> */}
-    </div>
-  );
-};
-
-export default Map;
