@@ -25,6 +25,7 @@ export const getDirections = (originId, destinationId, travelMode, departureTime
 export const getRouteDetails = (direction) => {
   const originId = direction.geocoded_waypoints[0].place_id;
   const route = direction.routes[0].legs[0];
+  const geolocation = route.start_location;
   const departureTime = route.departure_time.value;
   const arrivalTime = route.arrival_time.value;
   const travelDuration = route.duration.text;
@@ -36,11 +37,9 @@ export const getRouteDetails = (direction) => {
     return { type: 'Walking', duration: step.duration.text };
   });
 
-  return { originId, startAddress, endAddress, departureTime, arrivalTime, travelDuration, distance, travelSteps };
-};
-
-export const printRouteDetails = (route) => {
-  const {
+  return {
+    originId,
+    geolocation,
     startAddress,
     endAddress,
     departureTime,
@@ -48,17 +47,7 @@ export const printRouteDetails = (route) => {
     travelDuration,
     distance,
     travelSteps,
-  } = getRouteDetails(route);
-
-  console.log(`Start address: ${startAddress}`);
-  console.log(`End Address: ${endAddress}`);
-  console.log(`Departure time: ${departureTime}`);
-  console.log(`Arrival time: ${arrivalTime}`);
-  console.log(`Duration: ${travelDuration}`);
-  console.log(`Distance: ${distance}`);
-  travelSteps.forEach((step, index) => {
-    console.log(`${index + 1}: ${step.type}, ${step.duration}`);
-  });
+  };
 };
 
 const asyncForEach = async (array, callback) => {

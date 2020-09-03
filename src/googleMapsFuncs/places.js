@@ -1,5 +1,5 @@
 /* global google */
-export const getPlaceDetails = (id) => {
+export const getPlaceDetailsById = (id) => {
   return new Promise((resolve, reject) => {
     const div = document.createElement('div');
     const service = new google.maps.places.PlacesService(div);
@@ -11,7 +11,7 @@ export const getPlaceDetails = (id) => {
   });
 };
 
-export const getPlace = (query, fields, locationBias) => {
+export const getPlaceByQuery = (query, fields, locationBias) => {
   return new Promise((resolve, reject) => {
     const request = {
       query,
@@ -37,7 +37,7 @@ function sleep(milliseconds) {
   } while (currentDate - date < milliseconds);
 }
 
-export const getPlaces = (location, radius, type, name) => {
+export const getPlacesByNearbySearch = (location, radius, type, name) => {
   return new Promise((resolve, reject) => {
     const request = {
       location,

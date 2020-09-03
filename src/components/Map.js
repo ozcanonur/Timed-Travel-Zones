@@ -2,56 +2,26 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-console */
 /* global google */
-import React, { useEffect } from 'react';
+import React from 'react';
 import GoogleMapReact from 'google-map-react';
-
+import _ from 'lodash';
 import { useLocalStorage } from '../utils/customHooks';
+import { travelDurationToIntMins, numberToColorHsl } from '../utils/utils';
 import { getRouteDetails } from '../googleMapsFuncs/directions';
 
-const addGeolocationToResults = (results, stations) => {
-  results.forEach((detail) => {
-    const detailsStationId = detail.originId;
-
-    for (let i = 0; i < stations.length; i += 1) {
-      const station = stations[i];
-      if (detailsStationId === station.place_id) {
-        const newDetail = { ...detail, geolocation: station.geometry.location };
-        results = [...results, newDetail];
-      }
-    }
-  });
-  results = results.filter((e) => e.geolocation);
-
-  return results;
-};
-
-const sortByTravelDuration = (results) => {
-  results.sort((x, y) => parseInt(x.travelDuration.split(' ')[0], 10) - parseInt(y.travelDuration.split(' ')[0], 10));
-  return results;
-};
-
-// const AnyReactComponent = ({ text }) => (
-//   <div
-//     style={{
-//       height: '100px',
-//       width: '100px',
-//       background: 'rgba(0, 255, 0, 0.2)',
-//       borderRadius: '50%',
-//       display: 'inline-block',
-//     }}
-//   >
-//     {text}
-//   </div>
-// );
-
 const apiIsLoaded = (map, results) => {
+  const maxTravelDuration = _.max(results.map((e) => travelDurationToIntMins(e.travelDuration)));
+
   results.forEach((result) => {
     const { lat, lng } = result.geolocation;
+    const travelDuration = travelDurationToIntMins(result.travelDuration);
+    const color = numberToColorHsl(1 - travelDuration / maxTravelDuration, 0, 1);
+    // eslint-disable-next-line no-unused-vars
     const circle = new google.maps.Circle({
-      strokeColor: 'green',
+      strokeColor: color,
       strokeOpacity: 0.8,
       strokeWeight: 2,
-      fillColor: 'green',
+      fillColor: color,
       fillOpacity: 0.3,
       map,
       center: {
@@ -64,19 +34,13 @@ const apiIsLoaded = (map, results) => {
 };
 
 const Map = () => {
+  // eslint-disable-next-line no-unused-vars
   const [stations, setStations] = useLocalStorage('stations', []);
+  // eslint-disable-next-line no-unused-vars
   const [stationDirections, setStationDirections] = useLocalStorage('stationDirections', []);
 
-  useEffect(() => {
-    // getStationsOnMount(stations, setStations);
-    // getStationDirectionsOnMount(stationDirections, setStationDirections);
-  }, []);
-
-  let results = stationDirections.map((direction) => getRouteDetails(direction));
-  results = addGeolocationToResults(results, stations);
-  results = sortByTravelDuration(results);
-
-  results = results.filter((result) => parseInt(result.travelDuration.split(' ')[0], 10) < 40);
+  const results = stationDirections.map((direction) => getRouteDetails(direction));
+  // results = results.filter((result) => parseInt(result.travelDuration.split(' ')[0], 10) < 40);
   console.log(results);
 
   return (
@@ -87,8 +51,9 @@ const Map = () => {
           lat: 51.496,
           lng: -0.1,
         }}
-        defaultZoom={15}
+        defaultZoom={13}
         onGoogleApiLoaded={({ map }) => apiIsLoaded(map, results)}
+        yesIWantToUseGoogleMapApiInternals
       />
     </div>
   );
