@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import { useLocalStorage } from '../utils/customHooks';
 // eslint-disable-next-line no-unused-vars
-import { getDirections, printRouteDetails } from '../googleMapsFuncs/directions';
+import { getDirections, printRouteDetails, getDirectionsFromStations } from '../googleMapsFuncs/directions';
 import { getPlaces } from '../googleMapsFuncs/places';
 // import GoogleMapReact from 'google-map-react';
 
@@ -33,10 +33,21 @@ const getStationsOnMount = (stations, setStations) => {
   const radius = '5300';
   const type = ['subway_station'];
 
-  if (stations === []) {
+  if (stations.length === 0) {
     getPlaces(location, radius, type).then((results) => {
-      console.log(results);
-      setStations(results);
+      setStations(results.flat());
+    });
+  }
+};
+
+const getStationDirectionsOnMount = (stations, stationDirections, setStationDirections, start, end) => {
+  const stationNameAndIds = stations.map((station) => {
+    return { name: station.name, id: station.place_id };
+  });
+
+  if (stationDirections.length === 0) {
+    getDirectionsFromStations(stationNameAndIds.slice(start, end)).then((res) => {
+      setStationDirections([...stationDirections, ...res]);
     });
   }
 };
@@ -44,11 +55,15 @@ const getStationsOnMount = (stations, setStations) => {
 const Map = () => {
   const [routes, setRoutes] = useLocalStorage('routes', []);
   const [stations, setStations] = useLocalStorage('stations', []);
+  const [stationDirections, setStationDirections] = useLocalStorage('stationDirections', []);
 
   useEffect(() => {
     getRoutesOnMount(routes, setRoutes);
     getStationsOnMount(stations, setStations);
+    getStationDirectionsOnMount(stationDirections, setStationDirections);
   }, []);
+
+  console.log(stationDirections);
 
   return (
     <div style={{ height: '1000', width: '100%' }}>

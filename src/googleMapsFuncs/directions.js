@@ -58,3 +58,27 @@ export const printRouteDetails = (route) => {
     console.log(`${index + 1}: ${step.type}, ${step.duration}`);
   });
 };
+
+const asyncForEach = async (array, callback) => {
+  for (let i = 0; i < array.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await callback(array[i], i, array);
+  }
+};
+
+export const getDirectionsFromStations = async (stationNameAndIds) => {
+  const results = [];
+  await asyncForEach(stationNameAndIds, async (station) => {
+    const destinationId = 'ChIJuy2PxKMIdkgR4Z37JsEU16Q';
+    const directions = await getDirections(
+      station.id,
+      destinationId,
+      google.maps.TravelMode.TRANSIT,
+      new Date(2020, 8, 1, 10, 30),
+      ['SUBWAY']
+    );
+    results.push(directions);
+  });
+
+  return results;
+};
