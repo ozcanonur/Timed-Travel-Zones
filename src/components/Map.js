@@ -3,6 +3,7 @@
 /* global google */
 import React, { useEffect } from 'react';
 import { useLocalStorage } from '../utils/customHooks';
+// eslint-disable-next-line no-unused-vars
 import { getDirections, printRouteDetails } from '../googleMapsFuncs/directions';
 import { getPlaces } from '../googleMapsFuncs/places';
 // import GoogleMapReact from 'google-map-react';
@@ -27,14 +28,17 @@ const getRoutesOnMount = (routes, setRoutes) => {
 
 const getStationsOnMount = (stations, setStations) => {
   // Clapham North as the center
-  const location = new google.maps.LatLng(51.46526, -0.12927);
+  const location = new google.maps.LatLng(51.482769, -0.114811);
   // Meters
-  const radius = '20000';
+  const radius = '5300';
   const type = ['subway_station'];
 
-  getPlaces(location, radius, type).then((results) => {
-    setStations(results);
-  });
+  if (stations === []) {
+    getPlaces(location, radius, type).then((results) => {
+      console.log(results);
+      setStations(results);
+    });
+  }
 };
 
 const Map = () => {
@@ -45,9 +49,6 @@ const Map = () => {
     getRoutesOnMount(routes, setRoutes);
     getStationsOnMount(stations, setStations);
   }, []);
-
-  // printRouteDetails(routes[0]);
-  console.log(stations);
 
   return (
     <div style={{ height: '1000', width: '100%' }}>
